@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Catalog</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, button { margin: 5px; padding: 5px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #eee; }
+    </style>
+</head>
+<body>
+<h1>Book Catalog</h1>
+
+<h3>Filters</h3>
+<input type="text" id="filterTitle" placeholder="Title">
+<input type="text" id="filterAuthor" placeholder="Author">
+<button onclick="fetchBooks()">Apply Filters</button>
+
+<h3>Add / Update Book</h3>
+<input type="hidden" id="bookId">
+<input type="text" id="bookTitle" placeholder="Title">
+<input type="text" id="bookAuthor" placeholder="Author">
+<input type="number" id="bookPrice" placeholder="Price" step="0.01">
+<button onclick="saveBook()">Save Book</button>
+
+<h3>Books</h3>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th><th>Title</th><th>Author</th><th>Price</th><th>Actions</th>
+    </tr>
+    </thead>
+    <tbody id="booksTable">
+    </tbody>
+</table>
+
+<script src="app.js"></script>
+</body>
+</html>

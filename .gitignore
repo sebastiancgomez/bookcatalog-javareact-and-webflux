@@ -1,0 +1,23 @@
+# Java / Spring Boot
+target/
+*.class
+*.jar
+*.war
+*.iml
+.idea/
+*.log
+
+# Maven
+.mvn/
+.mvnw
+.mvnw.cmd
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.swp
