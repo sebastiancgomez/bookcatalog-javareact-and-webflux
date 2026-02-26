@@ -1,11 +1,24 @@
 package com.example.bookcatalog.dto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
 public class BookDto {
+
     private Long id;
+
+    @NotNull(message = "Title cannot be null")
+    @NotBlank(message = "Title must not be blank")
     private String title;
+
+    @NotNull(message = "Author cannot be null")
+    @NotBlank(message = "Author must not be blank")
     private String author;
+
+    @NotNull(message = "Price cannot be null")
+    @Positive(message = "Price must be positive")
     private BigDecimal price;
 
     public BookDto() {}

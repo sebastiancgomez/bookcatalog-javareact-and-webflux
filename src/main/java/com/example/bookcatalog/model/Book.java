@@ -6,16 +6,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 import java.math.BigDecimal;
 
-@Table("books")
+@Table("book")
 public class Book {
 
     @Id
     private Long id;
-
-    @NotBlank(message = "Title must not be blank")
     private String title;
     private String author;
-    @Positive(message = "Price must be positive")
     private BigDecimal price;
 
     public Book() {}

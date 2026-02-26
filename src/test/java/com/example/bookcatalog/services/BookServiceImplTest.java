@@ -1,8 +1,8 @@
 package com.example.bookcatalog.services;
 
 import com.example.bookcatalog.dto.BookDto;
+import com.example.bookcatalog.exception.BookNotFoundException;
 import com.example.bookcatalog.model.Book;
-import com.example.bookcatalog.model.PaginatedBooks;
 import com.example.bookcatalog.repository.BookRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,10 +13,9 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
-import java.util.List;
+
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 class BookServiceImplTest {
@@ -59,17 +58,21 @@ class BookServiceImplTest {
     @Test
     void testUpdateBook() {
         Book existing = new Book(1L, "Old Title", "Old Author", BigDecimal.valueOf(15));
+        Book updatedEntity = new Book(1L, "New Title", "New Author", BigDecimal.valueOf(25));
+
         BookDto updatedDto = new BookDto(1L, "New Title", "New Author", BigDecimal.valueOf(25));
+
         when(repository.findById(1L)).thenReturn(Mono.just(existing));
-        when(repository.save(any(Book.class))).thenReturn(Mono.just(existing));
+        when(repository.save(any(Book.class))).thenReturn(Mono.just(updatedEntity));
 
         StepVerifier.create(service.update(1L, updatedDto))
-                .expectNextMatches(b -> b.getTitle().equals("New Title") &&
-                        b.getPrice().equals(BigDecimal.valueOf(25)))
+                .expectNextMatches(b ->
+                        b.getTitle().equals("New Title") &&
+                                b.getPrice().equals(BigDecimal.valueOf(25)))
                 .verifyComplete();
 
-        verify(repository, times(1)).findById(1L);
-        verify(repository, times(1)).save(any(Book.class));
+        verify(repository).findById(1L);
+        verify(repository).save(any(Book.class));
     }
 
     @Test
@@ -88,7 +91,6 @@ class BookServiceImplTest {
     @Test
     void testGetAllPaginatedWithFilters() {
         Book book1 = new Book(1L, "Java Basics", "John Doe", BigDecimal.valueOf(20));
-        Book book2 = new Book(2L, "Spring Boot", "Jane Doe", BigDecimal.valueOf(30));
 
         when(repository.countFiltered("Java", "John")).thenReturn(Mono.just(1L));
         when(repository.findFiltered("Java", "John", PageRequest.of(0, 5)))
@@ -126,5 +128,53 @@ class BookServiceImplTest {
 
         verify(repository, times(1)).countFiltered(null, null);
         verify(repository, times(1)).findFiltered(null, null, PageRequest.of(0, 5));
+    }
+    @Test
+    void testGetByIdNotFound() {
+        when(repository.findById(1L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.getById(1L))
+                .expectError(BookNotFoundException.class)
+                .verify();
+
+        verify(repository, times(1)).findById(1L);
+    }
+    @Test
+    void testUpdateBookNotFound() {
+        BookDto updatedDto = new BookDto(1L, "New Title", "New Author", BigDecimal.valueOf(25));
+
+        when(repository.findById(1L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.update(1L, updatedDto))
+                .expectError(BookNotFoundException.class)
+                .verify();
+
+        verify(repository, times(1)).findById(1L);
+        verify(repository, never()).save(any());
+    }
+    @Test
+    void testDeleteBookNotFound() {
+        when(repository.findById(1L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.delete(1L))
+                .expectError(BookNotFoundException.class)
+                .verify();
+
+        verify(repository, times(1)).findById(1L);
+        verify(repository, never()).delete(any());
+    }
+    @Test
+    void testCreateBookDatabaseError() {
+        Book book = new Book(null, "Title 1", "Author 1", BigDecimal.valueOf(20));
+        BookDto dto = service.toDto(book);
+
+        when(repository.save(any(Book.class)))
+                .thenReturn(Mono.error(new RuntimeException("DB error")));
+
+        StepVerifier.create(service.create(dto))
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(repository, times(1)).save(any(Book.class));
     }
 }
