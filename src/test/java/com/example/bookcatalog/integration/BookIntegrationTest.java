@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -14,7 +15,7 @@ import java.util.Objects;
 @SpringBootTest
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class BookIntegrationTest {
+class BookIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private WebTestClient webTestClient;
