@@ -13,6 +13,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts/booksdb-init.sql:/docker-entrypoint-initdb.d/booksdb-init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d booksdb" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - bookcatalog-network
 
@@ -22,11 +28,12 @@ services:
       dockerfile: Dockerfile
     container_name: bookcatalog-app
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
-      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/booksdb
+      SPRING_PROFILES_ACTIVE: docker
       SPRING_R2DBC_USERNAME: postgres
       SPRING_R2DBC_PASSWORD: secret
     networks:
