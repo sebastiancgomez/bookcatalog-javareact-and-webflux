@@ -2,12 +2,12 @@ version: '3.9'
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:17
     container_name: bookcatalog-postgres
     environment:
-      POSTGRES_DB: booksdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
+     POSTGRES_DB: booksdb
+     POSTGRES_USER: postgres
+     POSTGRES_PASSWORD: secret
     ports:
       - "5432:5432"
     volumes:
@@ -26,9 +26,13 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/booksdb
+      SPRING_PROFILES_ACTIVE: azure
+      SPRING_R2DBC_URL: r2dbc:postgresql://bookcatalog-pg-dev.postgres.database.azure.com:5432/booksdb?sslMode=require
       SPRING_R2DBC_USERNAME: postgres
-      SPRING_R2DBC_PASSWORD: secret
+      SPRING_R2DBC_PASSWORD: Secret*01
+      SPRING_FLYWAY_URL: jdbc:postgresql://bookcatalog-pg-dev.postgres.database.azure.com:5432/booksdb?sslMode=require
+      SPRING_FLYWAY_USER: postgres
+      SPRING_FLYWAY_PASSWORD: Secret*01
     networks:
       - bookcatalog-network
 
