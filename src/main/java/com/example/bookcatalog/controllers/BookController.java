@@ -1,8 +1,15 @@
 package com.example.bookcatalog.controllers;
 
 import com.example.bookcatalog.dto.BookDto;
+import com.example.bookcatalog.exception.ErrorResponse;
 import com.example.bookcatalog.model.PaginatedBooks;
 import com.example.bookcatalog.services.BookService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/books")
+@Tag(name = "Books", description = "Operations related to books")
 public class BookController {
 
     private static final Logger log = LoggerFactory.getLogger(BookController.class);
@@ -24,6 +32,41 @@ public class BookController {
     // =========================
     // CREATE
     // =========================
+    @Operation(summary = "Create a new book")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Book created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BookDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request body",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Book already exists",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Unexpected server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<BookDto> createBook(@Valid @RequestBody BookDto book) {
@@ -42,6 +85,25 @@ public class BookController {
     // =========================
     // GET BY ID
     // =========================
+    @Operation(summary = "Get book by ID")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Book found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BookDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Book not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
     @GetMapping("/{id}")
     public Mono<BookDto> getBookById(@PathVariable Long id) {
 
@@ -59,6 +121,41 @@ public class BookController {
     // =========================
     // UPDATE
     // =========================
+    @Operation(summary = "Update book by ID")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Book updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BookDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request body",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Book not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Unexpected server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
     @PutMapping("/{id}")
     public Mono<BookDto> updateBook(@PathVariable Long id,
                                     @Valid @RequestBody BookDto updatedBook) {
@@ -77,6 +174,21 @@ public class BookController {
     // =========================
     // DELETE
     // =========================
+    @Operation(summary = "Delete book by ID")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Book deleted"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Book not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteBook(@PathVariable Long id) {
@@ -95,6 +207,25 @@ public class BookController {
     // =========================
     // GET ALL (PAGINATED)
     // =========================
+    @Operation(summary = "Get all books (paginated)")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Books retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PaginatedBooks.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid pagination parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
     @GetMapping
     public Mono<PaginatedBooks> getAll(
             @RequestParam(defaultValue = "0") int page,
