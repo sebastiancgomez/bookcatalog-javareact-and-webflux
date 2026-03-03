@@ -10,6 +10,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 
 @SpringBootTest
@@ -34,7 +35,8 @@ class BookIntegrationTest extends AbstractIntegrationTest {
                 null,
                 "Integration Book",
                 "Tester",
-                BigDecimal.valueOf(99.99)
+                BigDecimal.valueOf(99.99),
+                LocalDate.now()
         );
 
         createdBookId = Objects.requireNonNull(webTestClient.post()

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class BookDto {
 
@@ -20,14 +21,17 @@ public class BookDto {
     @NotNull(message = "Price cannot be null")
     @Positive(message = "Price must be positive")
     private BigDecimal price;
+    @NotNull(message = "Publish Date cannot be null")
+    private LocalDate publishDate;
 
     public BookDto() {}
 
-    public BookDto(Long id, String title, String author, BigDecimal price) {
+    public BookDto(Long id, String title, String author, BigDecimal price, LocalDate publishDate) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.price = price;
+        this.publishDate = publishDate;
     }
 
     // Getters y setters
@@ -39,4 +43,6 @@ public class BookDto {
     public void setAuthor(String author) { this.author = author; }
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
+    public LocalDate getPublishDate(){return publishDate;}
+    public void setPublishDate(LocalDate publishDate){this.publishDate = publishDate;}
 }

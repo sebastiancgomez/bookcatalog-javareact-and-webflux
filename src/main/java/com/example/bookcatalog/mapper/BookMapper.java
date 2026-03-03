@@ -10,7 +10,8 @@ public class BookMapper {
                 book.getId(),
                 book.getTitle(),
                 book.getAuthor(),
-                book.getPrice()
+                book.getPrice(),
+                book.getPublishDate()
         );
     }
 
@@ -20,6 +21,7 @@ public class BookMapper {
         book.setTitle(dto.getTitle());
         book.setAuthor(dto.getAuthor());
         book.setPrice(dto.getPrice());
+        book.setPublishDate(dto.getPublishDate());
         return book;
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -39,8 +40,8 @@ class BookControllerTest {
     @Test
     void shouldCreateBookSuccessfully() {
 
-        BookDto request = new BookDto(null, "Clean Code", "Robert C. Martin", BigDecimal.valueOf(45));
-        BookDto response = new BookDto(1L, "Clean Code", "Robert C. Martin", BigDecimal.valueOf(45));
+        BookDto request = new BookDto(null, "Clean Code", "Robert C. Martin", BigDecimal.valueOf(45), LocalDate.now() );
+        BookDto response = new BookDto(1L, "Clean Code", "Robert C. Martin", BigDecimal.valueOf(45), LocalDate.now());
 
         when(bookService.create(any()))
                 .thenReturn(Mono.just(response));
@@ -64,7 +65,7 @@ class BookControllerTest {
         webTestClient.post()
                 .uri("/books")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN))
+                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN, LocalDate.now()))
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT);
     }
@@ -72,7 +73,7 @@ class BookControllerTest {
     @Test
     void shouldReturn400WhenInvalidRequest() {
 
-        BookDto invalid = new BookDto(null,"","",BigDecimal.valueOf(-5));
+        BookDto invalid = new BookDto(null,"","",BigDecimal.valueOf(-5), LocalDate.now());
 
         webTestClient.post()
                 .uri("/books")
@@ -91,7 +92,7 @@ class BookControllerTest {
         webTestClient.post()
                 .uri("/books")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN))
+                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN, LocalDate.now()))
                 .exchange()
                 .expectStatus().is5xxServerError();
     }
@@ -103,7 +104,7 @@ class BookControllerTest {
     @Test
     void shouldReturnPaginatedBooks() {
 
-        BookDto dto = new BookDto(1L,"Title","Author",BigDecimal.TEN);
+        BookDto dto = new BookDto(1L,"Title","Author",BigDecimal.TEN, LocalDate.now());
 
         PaginatedBooks page = new PaginatedBooks(
                 1L,
@@ -135,7 +136,7 @@ class BookControllerTest {
     @Test
     void shouldReturnBookById() {
 
-        BookDto dto = new BookDto(1L,"Title","Author",BigDecimal.TEN);
+        BookDto dto = new BookDto(1L,"Title","Author",BigDecimal.TEN, LocalDate.now());
 
         when(bookService.getById(1L))
                 .thenReturn(Mono.just(dto));
@@ -167,8 +168,8 @@ class BookControllerTest {
     @Test
     void shouldUpdateBook() {
 
-        BookDto request = new BookDto(null,"Updated","Author",BigDecimal.TEN);
-        BookDto response = new BookDto(1L,"Updated","Author",BigDecimal.TEN);
+        BookDto request = new BookDto(null,"Updated","Author",BigDecimal.TEN, LocalDate.now());
+        BookDto response = new BookDto(1L,"Updated","Author",BigDecimal.TEN, LocalDate.now());
 
         when(bookService.update(eq(1L), any()))
                 .thenReturn(Mono.just(response));
@@ -192,7 +193,7 @@ class BookControllerTest {
         webTestClient.put()
                 .uri("/books/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN))
+                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN, LocalDate.now()))
                 .exchange()
                 .expectStatus().isNotFound();
     }

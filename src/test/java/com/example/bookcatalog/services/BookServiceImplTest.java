@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 
 import static org.mockito.ArgumentMatchers.any;
@@ -60,7 +61,7 @@ class BookServiceImplTest {
         Book existing = new Book(1L, "Old Title", "Old Author", BigDecimal.valueOf(15));
         Book updatedEntity = new Book(1L, "New Title", "New Author", BigDecimal.valueOf(25));
 
-        BookDto updatedDto = new BookDto(1L, "New Title", "New Author", BigDecimal.valueOf(25));
+        BookDto updatedDto = new BookDto(1L, "New Title", "New Author", BigDecimal.valueOf(25), LocalDate.now());
 
         when(repository.findById(1L)).thenReturn(Mono.just(existing));
         when(repository.save(any(Book.class))).thenReturn(Mono.just(updatedEntity));
@@ -141,7 +142,7 @@ class BookServiceImplTest {
     }
     @Test
     void testUpdateBookNotFound() {
-        BookDto updatedDto = new BookDto(1L, "New Title", "New Author", BigDecimal.valueOf(25));
+        BookDto updatedDto = new BookDto(1L, "New Title", "New Author", BigDecimal.valueOf(25), LocalDate.now());
 
         when(repository.findById(1L)).thenReturn(Mono.empty());
 

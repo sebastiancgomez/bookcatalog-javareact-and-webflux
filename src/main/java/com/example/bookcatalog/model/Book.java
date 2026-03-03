@@ -3,8 +3,10 @@ package com.example.bookcatalog.model;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Table("book")
 public class Book {
@@ -14,6 +16,8 @@ public class Book {
     private String title;
     private String author;
     private BigDecimal price;
+    @Column("publish_date")
+    private LocalDate publishDate;
 
     public Book() {}
 
@@ -34,9 +38,11 @@ public class Book {
     public String getTitle() { return title; }
     public String getAuthor() { return author; }
     public BigDecimal getPrice() { return price; }
+    public LocalDate getPublishDate(){return publishDate;}
 
     public void setId(Long id) { this.id = id; }
     public void setTitle(String title) { this.title = title; }
     public void setAuthor(String author) { this.author = author; }
     public void setPrice(BigDecimal price) { this.price = price; }
+    public void setPublishDate(LocalDate publishDate){this.publishDate = publishDate;}
 }

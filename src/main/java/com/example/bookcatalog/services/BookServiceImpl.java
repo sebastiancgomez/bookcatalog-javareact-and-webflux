@@ -25,7 +25,7 @@ public class BookServiceImpl implements BookService {
 
     // Mapper
     public BookDto toDto(Book book) {
-        return new BookDto(book.getId(), book.getTitle(), book.getAuthor(), book.getPrice());
+        return new BookDto(book.getId(), book.getTitle(), book.getAuthor(), book.getPrice(), book.getPublishDate());
     }
 
     public Book toEntity(BookDto dto) {
