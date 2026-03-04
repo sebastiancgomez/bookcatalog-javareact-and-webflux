@@ -2,7 +2,7 @@ package com.example.bookcatalog.controllers;
 
 import com.example.bookcatalog.dto.BookDto;
 import com.example.bookcatalog.exception.ErrorResponse;
-import com.example.bookcatalog.model.PaginatedBooks;
+import com.example.bookcatalog.dto.response.PaginatedBooks;
 import com.example.bookcatalog.services.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/books")
@@ -231,12 +233,14 @@ public class BookController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) String author) {
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) LocalDate publishDateFrom,
+            @RequestParam(required = false) LocalDate publishDateTo) {
 
-        log.info("GET /books - page={}, size={}, title={}, author={}",
-                page, size, title, author);
+        log.info("GET /books - page={}, size={}, title={}, author={}, publishDateFrom={}, publishDateTo={}",
+                page, size, title, author, publishDateFrom, publishDateTo);
 
-        return service.getAll(page, size, title, author)
+        return service.getAll(page, size, title, author, publishDateFrom, publishDateTo)
                 .doOnError(error ->
                         log.error("GET /books - error retrieving books", error)
                 );

@@ -1,9 +1,10 @@
 package com.example.bookcatalog.services;
 
 import com.example.bookcatalog.dto.BookDto;
-import com.example.bookcatalog.model.PaginatedBooks;
-import com.example.bookcatalog.model.Book;
+import com.example.bookcatalog.dto.response.PaginatedBooks;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
 
 public interface BookService {
     Mono<BookDto> getById(Long id);
@@ -11,5 +12,6 @@ public interface BookService {
     Mono<BookDto> update(Long id, BookDto book);
     Mono<Void> delete(Long id);
 
-    Mono<PaginatedBooks> getAll(int page, int size, String title, String author);
+    Mono<PaginatedBooks> getAll(int page, int size, String title, String author,  LocalDate from,
+                                LocalDate to);
 }

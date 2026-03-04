@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -25,7 +26,7 @@ public class BookMapperTest {
 
     @Test
     public void shouldMapToEntity() {
-        BookDto dto = new BookDto(1L, "Title", "Author", BigDecimal.TEN);
+        BookDto dto = new BookDto(1L, "Title", "Author", BigDecimal.TEN, LocalDate.now());
 
         Book book = BookMapper.toEntity(dto);
 

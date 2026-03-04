@@ -9,25 +9,16 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest
 @Testcontainers
+@SpringBootTest
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
-    static {
-        PostgresTestContainer.getInstance();
-    }
+    @Container
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>("postgres:17")
+                    .withDatabaseName("testdb")
+                    .withUsername("test")
+                    .withPassword("test");
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.r2dbc.url", () ->
-                "r2dbc:postgresql://"
-                        + PostgresTestContainer.getInstance().getHost()
-                        + ":"
-                        + PostgresTestContainer.getInstance().getFirstMappedPort()
-                        + "/testdb");
-
-        registry.add("spring.r2dbc.username", () -> "test");
-        registry.add("spring.r2dbc.password", () -> "test");
-    }
 }

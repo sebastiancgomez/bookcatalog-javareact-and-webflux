@@ -1,9 +1,10 @@
 package com.example.bookcatalog.controllers;
 
 import com.example.bookcatalog.dto.BookDto;
+import com.example.bookcatalog.dto.response.PageResponse;
+import com.example.bookcatalog.dto.response.PaginatedBooks;
 import com.example.bookcatalog.exception.BookNotFoundException;
 import com.example.bookcatalog.exception.GlobalExceptionHandler;
-import com.example.bookcatalog.model.PaginatedBooks;
 import com.example.bookcatalog.services.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -39,8 +41,8 @@ class BookControllerTest {
     @Test
     void shouldCreateBookSuccessfully() {
 
-        BookDto request = new BookDto(null, "Clean Code", "Robert C. Martin", BigDecimal.valueOf(45));
-        BookDto response = new BookDto(1L, "Clean Code", "Robert C. Martin", BigDecimal.valueOf(45));
+        BookDto request = new BookDto(null, "Clean Code", "Robert C. Martin", BigDecimal.valueOf(45), LocalDate.now() );
+        BookDto response = new BookDto(1L, "Clean Code", "Robert C. Martin", BigDecimal.valueOf(45), LocalDate.now());
 
         when(bookService.create(any()))
                 .thenReturn(Mono.just(response));
@@ -64,7 +66,7 @@ class BookControllerTest {
         webTestClient.post()
                 .uri("/books")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN))
+                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN, LocalDate.now()))
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT);
     }
@@ -72,7 +74,7 @@ class BookControllerTest {
     @Test
     void shouldReturn400WhenInvalidRequest() {
 
-        BookDto invalid = new BookDto(null,"","",BigDecimal.valueOf(-5));
+        BookDto invalid = new BookDto(null,"","",BigDecimal.valueOf(-5), LocalDate.now());
 
         webTestClient.post()
                 .uri("/books")
@@ -91,7 +93,7 @@ class BookControllerTest {
         webTestClient.post()
                 .uri("/books")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN))
+                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN, LocalDate.now()))
                 .exchange()
                 .expectStatus().is5xxServerError();
     }
@@ -103,15 +105,26 @@ class BookControllerTest {
     @Test
     void shouldReturnPaginatedBooks() {
 
-        BookDto dto = new BookDto(1L,"Title","Author",BigDecimal.TEN);
+        BookDto dto = new BookDto(
+                1L,
+                "Title",
+                "Author",
+                BigDecimal.TEN,
+                LocalDate.now()
+        );
 
-        PaginatedBooks page = new PaginatedBooks(
+                PaginatedBooks page = new PaginatedBooks(
                 1L,
                 List.of(dto)
         );
-
-        when(bookService.getAll(anyInt(), anyInt(), anyString(), anyString()))
-                .thenReturn(Mono.just(page));
+        when(bookService.getAll(
+                anyInt(),
+                anyInt(),
+                anyString(),
+                anyString(),
+                any(),
+                any()
+        )).thenReturn(Mono.just(page));
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -120,6 +133,8 @@ class BookControllerTest {
                         .queryParam("size", 10)
                         .queryParam("title", "")
                         .queryParam("author", "")
+                        .queryParam("publishDateFrom", "")
+                        .queryParam("publishDateTo", "")
                         .build())
                 .exchange()
                 .expectStatus().isOk()
@@ -135,7 +150,7 @@ class BookControllerTest {
     @Test
     void shouldReturnBookById() {
 
-        BookDto dto = new BookDto(1L,"Title","Author",BigDecimal.TEN);
+        BookDto dto = new BookDto(1L,"Title","Author",BigDecimal.TEN, LocalDate.now());
 
         when(bookService.getById(1L))
                 .thenReturn(Mono.just(dto));
@@ -167,8 +182,8 @@ class BookControllerTest {
     @Test
     void shouldUpdateBook() {
 
-        BookDto request = new BookDto(null,"Updated","Author",BigDecimal.TEN);
-        BookDto response = new BookDto(1L,"Updated","Author",BigDecimal.TEN);
+        BookDto request = new BookDto(null,"Updated","Author",BigDecimal.TEN, LocalDate.now());
+        BookDto response = new BookDto(1L,"Updated","Author",BigDecimal.TEN, LocalDate.now());
 
         when(bookService.update(eq(1L), any()))
                 .thenReturn(Mono.just(response));
@@ -192,7 +207,7 @@ class BookControllerTest {
         webTestClient.put()
                 .uri("/books/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN))
+                .bodyValue(new BookDto(null,"A","B",BigDecimal.TEN, LocalDate.now()))
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -223,5 +238,75 @@ class BookControllerTest {
                 .uri("/books/1")
                 .exchange()
                 .expectStatus().isNotFound();
+    }
+    @Test
+    void shouldFilterByPublishDateFrom() {
+
+        BookDto dto = new BookDto(
+                1L,
+                "Filtered Book",
+                "Author",
+                BigDecimal.TEN,
+                LocalDate.of(2024, 1, 10)
+        );
+
+        PaginatedBooks page = new PaginatedBooks(
+                1L,
+                List.of(dto)
+        );
+
+        when(bookService.getAll(
+                anyInt(),
+                anyInt(),
+                any(),
+                any(),
+                eq(LocalDate.of(2024, 1, 1)),
+                isNull()
+        )).thenReturn(Mono.just(page));
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/books")
+                        .queryParam("publishDateFrom", "2024-01-01")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.total").isEqualTo(1)
+                .jsonPath("$.books[0].id").isEqualTo(1);
+    }
+    @Test
+    void shouldReturn400WhenPublishDateFromAfterTo() {
+
+        when(bookService.getAll(
+                anyInt(),
+                anyInt(),
+                any(),
+                any(),
+                eq(LocalDate.of(2024, 2, 1)),
+                eq(LocalDate.of(2024, 1, 1))
+        )).thenReturn(Mono.error(
+                new IllegalArgumentException("publishDateFrom must be before publishDateTo")
+        ));
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/books")
+                        .queryParam("publishDateFrom", "2024-02-01")
+                        .queryParam("publishDateTo", "2024-01-01")
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+    @Test
+    void shouldReturn400WhenInvalidDateFormat() {
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/books")
+                        .queryParam("publishDateFrom", "invalid-date")
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }
