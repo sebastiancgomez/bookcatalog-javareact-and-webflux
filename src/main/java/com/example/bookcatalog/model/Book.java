@@ -21,6 +21,14 @@ public class Book {
 
     public Book() {}
 
+    public Book(Long id, String title, String author, BigDecimal price, LocalDate publishDate) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.price = price;
+        this.publishDate = publishDate;
+    }
+
     public Book(Long id, String title, String author, BigDecimal price) {
         this.id = id;
         this.title = title;

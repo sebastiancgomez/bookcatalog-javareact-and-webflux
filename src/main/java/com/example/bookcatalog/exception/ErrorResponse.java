@@ -1,5 +1,6 @@
 package com.example.bookcatalog.exception;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class ErrorResponse {
@@ -16,6 +17,13 @@ public class ErrorResponse {
         this.error = error;
         this.message = message;
         this.path = path;
+    }
+
+    public ErrorResponse(int status, String message, String error) {
+        this.timestamp = LocalDateTime.now();
+        this.status = status;
+        this.error = error;
+        this.message = message;
     }
 
     // getters

@@ -2,9 +2,11 @@ package com.example.bookcatalog.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -13,7 +15,17 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(ServerWebInputException.class)
+    public ResponseEntity<?> handleTypeMismatch(ServerWebInputException ex) {
 
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorResponse(
+                        400,
+                        "Invalid request parameter",
+                        "Bad Request"
+                ));
+    }
     // =========================
     // VALIDATION ERRORS (400)
     // =========================
@@ -93,5 +105,10 @@ public class GlobalExceptionHandler {
                 "message", ex.getMessage(),
                 "path", exchange.getRequest().getPath().value()
         ));
+    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleIllegalArgument(IllegalArgumentException ex) {
+        return ex.getMessage();
     }
 }

@@ -1,9 +1,10 @@
 package com.example.bookcatalog.controllers;
 
 import com.example.bookcatalog.dto.BookDto;
+import com.example.bookcatalog.dto.response.PageResponse;
+import com.example.bookcatalog.dto.response.PaginatedBooks;
 import com.example.bookcatalog.exception.BookNotFoundException;
 import com.example.bookcatalog.exception.GlobalExceptionHandler;
-import com.example.bookcatalog.model.PaginatedBooks;
 import com.example.bookcatalog.services.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,15 +105,26 @@ class BookControllerTest {
     @Test
     void shouldReturnPaginatedBooks() {
 
-        BookDto dto = new BookDto(1L,"Title","Author",BigDecimal.TEN, LocalDate.now());
+        BookDto dto = new BookDto(
+                1L,
+                "Title",
+                "Author",
+                BigDecimal.TEN,
+                LocalDate.now()
+        );
 
-        PaginatedBooks page = new PaginatedBooks(
+                PaginatedBooks page = new PaginatedBooks(
                 1L,
                 List.of(dto)
         );
-
-        when(bookService.getAll(anyInt(), anyInt(), anyString(), anyString()))
-                .thenReturn(Mono.just(page));
+        when(bookService.getAll(
+                anyInt(),
+                anyInt(),
+                anyString(),
+                anyString(),
+                any(),
+                any()
+        )).thenReturn(Mono.just(page));
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -121,6 +133,8 @@ class BookControllerTest {
                         .queryParam("size", 10)
                         .queryParam("title", "")
                         .queryParam("author", "")
+                        .queryParam("publishDateFrom", "")
+                        .queryParam("publishDateTo", "")
                         .build())
                 .exchange()
                 .expectStatus().isOk()
@@ -224,5 +238,75 @@ class BookControllerTest {
                 .uri("/books/1")
                 .exchange()
                 .expectStatus().isNotFound();
+    }
+    @Test
+    void shouldFilterByPublishDateFrom() {
+
+        BookDto dto = new BookDto(
+                1L,
+                "Filtered Book",
+                "Author",
+                BigDecimal.TEN,
+                LocalDate.of(2024, 1, 10)
+        );
+
+        PaginatedBooks page = new PaginatedBooks(
+                1L,
+                List.of(dto)
+        );
+
+        when(bookService.getAll(
+                anyInt(),
+                anyInt(),
+                any(),
+                any(),
+                eq(LocalDate.of(2024, 1, 1)),
+                isNull()
+        )).thenReturn(Mono.just(page));
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/books")
+                        .queryParam("publishDateFrom", "2024-01-01")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.total").isEqualTo(1)
+                .jsonPath("$.books[0].id").isEqualTo(1);
+    }
+    @Test
+    void shouldReturn400WhenPublishDateFromAfterTo() {
+
+        when(bookService.getAll(
+                anyInt(),
+                anyInt(),
+                any(),
+                any(),
+                eq(LocalDate.of(2024, 2, 1)),
+                eq(LocalDate.of(2024, 1, 1))
+        )).thenReturn(Mono.error(
+                new IllegalArgumentException("publishDateFrom must be before publishDateTo")
+        ));
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/books")
+                        .queryParam("publishDateFrom", "2024-02-01")
+                        .queryParam("publishDateTo", "2024-01-01")
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+    @Test
+    void shouldReturn400WhenInvalidDateFormat() {
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/books")
+                        .queryParam("publishDateFrom", "invalid-date")
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }
