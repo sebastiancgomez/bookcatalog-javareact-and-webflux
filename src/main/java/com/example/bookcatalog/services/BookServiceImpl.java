@@ -78,6 +78,7 @@ public class BookServiceImpl implements BookService {
                     existing.setTitle(bookDto.getTitle());
                     existing.setAuthor(bookDto.getAuthor());
                     existing.setPrice(bookDto.getPrice());
+                    existing.setPublishDate(bookDto.getPublishDate());
                     return repository.save(toEntity(existing));
                 })
                 .doOnSuccess(updated -> log.info("Libro actualizado: {}", updated))
