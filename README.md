@@ -1,41 +1,71 @@
-[# 📚 Book Catalog API (Reactive Microservice)
+# 📚 Book Catalog API (Reactive Microservice)
 
 Reactive REST API for managing a book catalog built with **Spring Boot WebFlux**, **R2DBC**, and deployed in **Azure Container Apps**.
 
-This project demonstrates modern backend practices including reactive programming, clean architecture, Docker containerization, cloud deployment, and API documentation.
+This project demonstrates modern backend engineering practices including:
+
+- Reactive programming
+- Clean architecture
+- DTO projections
+- Pagination and filtering
+- Docker containerization
+- Cloud deployment on Azure
+- Reactive testing
+
+---
+
+# 🚀 Live API
+
+The API is publicly available at:
+
+https://bookcatalog-app.lemonflower-9dbaf244.canadacentral.azurecontainerapps.io/
+
+### Swagger UI
+
+API documentation:
+
+```
+https://bookcatalog-app.lemonflower-9dbaf244.canadacentral.azurecontainerapps.io/swagger-ui.html
+```
+
+⚠ **Important**
+
+The container is configured with **scale-to-zero** in Azure Container Apps to reduce cost.
+
+If the API has been inactive for a while, the first request may take **20–40 seconds** while the container instance starts.
 
 ---
 
 # 🚀 Tech Stack
 
-Backend
+### Backend
 
 - Java 17
 - Spring Boot 3
-- Spring WebFlux (Reactive)
+- Spring WebFlux
 - Spring Data R2DBC
-- Reactor (Mono / Flux)
+- Project Reactor (Mono / Flux)
 - Maven
 
-API
+### API
 
 - REST
 - OpenAPI / Swagger
 
-Testing
+### Testing
 
 - JUnit 5
 - Reactor Test (StepVerifier)
 - WebTestClient
 - Mockito
 
-Infrastructure
+### Infrastructure
 
 - Docker
 - Azure Container Registry (ACR)
 - Azure Container Apps
 
-Frontend (simple demo)
+### Frontend (demo client)
 
 - HTML
 - CSS
@@ -45,31 +75,74 @@ Frontend (simple demo)
 
 # 🏗 Architecture
 
-The service follows a layered architecture:
+The service follows a layered architecture designed for reactive applications.
 
 ```
-Controller
-    ↓
-Service
-    ↓
-Repository
-    ↓
+Client
+   ↓
+Spring WebFlux Controller
+   ↓
+Service Layer
+   ↓
+Repository Layer (Reactive R2DBC)
+   ↓
 Database
 ```
 
-Additional layers:
+Supporting components:
 
 ```
 DTO
 Mapper
-GlobalExceptionHandler
+Global Exception Handler
+Pagination Response
 ```
 
-Reactive data flow:
+Reactive flow:
 
 ```
-Controller → Mono / Flux → Service → Repository → Database
+Controller
+   ↓
+Mono / Flux
+   ↓
+Service
+   ↓
+Repository
+   ↓
+Database
 ```
+
+---
+
+# ☁️ Cloud Architecture (Azure)
+
+Deployment flow:
+
+```
+Developer
+   ↓
+Docker Build
+   ↓
+Azure Container Registry (ACR)
+   ↓
+Azure Container Apps
+   ↓
+Public Endpoint
+```
+
+Infrastructure components used:
+
+```
+Azure Resource Group
+    ↓
+Azure Container Registry
+    ↓
+Azure Container App Environment
+    ↓
+BookCatalog Container App
+```
+
+The container app automatically pulls the image from ACR.
 
 ---
 
@@ -106,15 +179,15 @@ src
 
 # 📚 API Features
 
-## CRUD Operations
+### CRUD Operations
 
 | Method | Endpoint | Description |
 |------|------|------|
-GET | `/books` | Get books (paginated + filters)
-GET | `/books/{id}` | Get book by ID
-POST | `/books` | Create book
-PUT | `/books/{id}` | Update book
-DELETE | `/books/{id}` | Delete book
+GET | `/books` | Get books with pagination and filters |
+GET | `/books/{id}` | Get book by ID |
+POST | `/books` | Create book |
+PUT | `/books/{id}` | Update book |
+DELETE | `/books/{id}` | Delete book |
 
 ---
 
@@ -129,19 +202,19 @@ GET /books?publishDateFrom=2024-01-01
 GET /books?publishDateTo=2024-12-31
 ```
 
-Combined filters are also supported.
+Filters can be combined.
 
 ---
 
 # 📄 Pagination
 
-Example:
+Example request:
 
 ```
 GET /books?page=0&size=5
 ```
 
-Response:
+Example response:
 
 ```json
 {
@@ -158,9 +231,11 @@ Response:
 
 ---
 
-# 🧠 Dynamic DTO Projection
+# 🧠 DTO Projection
 
-The API supports dynamic DTO responses.
+The API supports multiple DTO projections to optimize payload size.
+
+Example:
 
 ```
 GET /books?dto=minimal
@@ -188,33 +263,15 @@ GET /books?dto=full
 }
 ```
 
-This reduces payload size and improves performance for list endpoints.
-
----
-
-# 📑 API Documentation
-
-Swagger UI is available at:
-
-```
-/swagger-ui.html
-```
-
-Example:
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
 ---
 
 # 🧪 Testing
 
-Tests include:
+Testing strategy includes:
 
-- Controller tests with **WebTestClient**
-- Service tests with **StepVerifier**
-- Mocking with **Mockito**
+- **Controller tests** using WebTestClient
+- **Service tests** using StepVerifier
+- **Mocking** with Mockito
 
 Example reactive test:
 
@@ -226,7 +283,7 @@ StepVerifier.create(service.getById(1L))
 
 ---
 
-# 🐳 Running with Docker
+# 🐳 Running Locally with Docker
 
 Build the image:
 
@@ -240,58 +297,52 @@ Run container:
 docker run -p 8080:8080 bookcatalog-app
 ```
 
+Then open:
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
 ---
 
 # ☁️ Azure Deployment
 
-The application is deployed using:
-
-- **Azure Container Registry**
-- **Azure Container Apps**
-
-Deployment flow:
+Deployment process:
 
 ```
-Local Build
-     ↓
-Docker Image
-     ↓
-Push to Azure Container Registry
-     ↓
-Azure Container App pulls image
-     ↓
-Application exposed via public endpoint
+1. Build Docker image
+2. Push image to Azure Container Registry
+3. Container App pulls image from ACR
+4. Azure exposes the application through a public endpoint
+```
+
+Commands used during deployment:
+
+```
+az acr login --name bookcatalogacr
+docker tag bookcatalog-app:latest bookcatalogacr.azurecr.io/bookcatalog-app:latest
+docker push bookcatalogacr.azurecr.io/bookcatalog-app:latest
 ```
 
 ---
 
-# 🌐 Live API
+# 📊 Concepts Demonstrated
 
-Example deployment URL:
-
-```
-https://bookcatalog-app.azurecontainerapps.io
-```
-
----
-
-# 📊 Key Concepts Demonstrated
-
-Reactive programming with WebFlux
+Reactive programming with Spring WebFlux
 
 DTO projection strategies
 
-Reactive error handling
-
 Pagination and filtering
 
-Cloud-native container deployment
+Reactive error handling
 
-Clean service architecture
+Clean architecture
 
-API documentation with OpenAPI
+Containerized deployment
 
-Unit testing reactive pipelines
+Cloud-native architecture
+
+Reactive unit testing
 
 ---
 
@@ -302,11 +353,7 @@ Backend engineer specialized in:
 - Java
 - Spring Boot
 - Microservices
-- Cloud deployment
+- Cloud architecture
 - Reactive systems
 
-```
 This project was built as part of backend architecture practice and cloud-native deployment experimentation.
-```
-
----](https://www.linkedin.com/jobs/view/4377968599)
