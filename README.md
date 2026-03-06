@@ -153,12 +153,18 @@ src
  ├─ controllers
  │   └─ BookController
  │
+ ├─ config
+ │   └─ OpenApiConfig
+ │
  ├─ services
  │   ├─ BookService
  │   └─ BookServiceImpl
  │
  ├─ repository
  │   └─ BookRepository
+ │
+ ├─ model
+ │   └─ Book
  │
  ├─ dto
  │   ├─ BookDto
@@ -169,9 +175,12 @@ src
  │   └─ BookMapper
  │
  ├─ exceptions
+ │   ├─ BookNotFoundException
+ │   ├─ ErrorResponse
  │   └─ GlobalExceptionHandler
  │
  └─ dto/response
+     ├─ PageResponse    
      └─ PaginatedBooks
 ```
 
@@ -346,14 +355,14 @@ Reactive unit testing
 
 ---
 
-# 👨‍💻 Author
+## 👨‍💻 Author
 
-Backend engineer specialized in:
+**Juan Sebastián Cárdenas Gómez**
 
-- Java
-- Spring Boot
-- Microservices
-- Cloud architecture
-- Reactive systems
+Backend Engineer specialized in Java, Spring Boot, microservices, and reactive systems.
 
-This project was built as part of backend architecture practice and cloud-native deployment experimentation.
+This project was built as part of backend architecture practice and cloud-native deployment experimentation using Azure Container Apps.
+
+🔗 GitHub: https://github.com/sebastiancgomez  
+🔗 LinkedIn: https://linkedin.com/in/juan-sebastian-cardenas-gomez-aa624731
+
