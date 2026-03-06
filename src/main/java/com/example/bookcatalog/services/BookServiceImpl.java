@@ -2,6 +2,7 @@ package com.example.bookcatalog.services;
 
 import com.example.bookcatalog.dto.BookDto;
 import com.example.bookcatalog.exception.BookNotFoundException;
+import com.example.bookcatalog.mapper.BookMapper;
 import com.example.bookcatalog.model.Book;
 import com.example.bookcatalog.dto.response.PaginatedBooks;
 import com.example.bookcatalog.repository.BookRepository;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -35,9 +37,11 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Mono<PaginatedBooks> getAll(int page, int size, String title, String author,  LocalDate from,
-                                       LocalDate to) {
+    public Mono<PaginatedBooks> getAll(int page, int size, String title, String author,
+                                       LocalDate from, LocalDate to, String dto) {
+
         PageRequest pageable = PageRequest.of(page, size);
+
         if (from != null && to != null && from.isAfter(to)) {
             return Mono.error(
                     new IllegalArgumentException("publishDateFrom must be before publishDateTo")
@@ -47,18 +51,41 @@ public class BookServiceImpl implements BookService {
         Mono<Long> total = repository.countFiltered(title, author, from, to);
         Flux<Book> books = repository.findFiltered(title, author, from, to, pageable);
 
-        return total.zipWith(books.collectList(),
-                (t, list) -> new PaginatedBooks(t, list.stream().map(this::toDto).toList()));
+        return total.zipWith(books.collectList(), (t, list) -> {
+
+            List<?> mappedBooks;
+
+            if ("minimal".equalsIgnoreCase(dto)) {
+                mappedBooks = list.stream()
+                        .map(BookMapper::toMinimalDto)
+                        .toList();
+            } else {
+                mappedBooks = list.stream()
+                        .map(BookMapper::toFullDto)
+                        .toList();
+            }
+
+            return new PaginatedBooks(t, mappedBooks);
+        });
     }
 
     @Override
-    public Mono<BookDto> getById(Long id) {
+    public Mono<Object> getById(Long id, String dto) {
+
         log.info("Buscando libro con ID: {}", id);
+
         return repository.findById(id)
                 .switchIfEmpty(Mono.error(new BookNotFoundException(id)))
                 .doOnSuccess(book -> log.info("Libro encontrado: {}", book))
                 .doOnError(e -> log.error("Error buscando libro con ID {}: {}", id, e.getMessage()))
-                .map(this::toDto);
+                .map(book -> {
+
+                    if ("minimal".equalsIgnoreCase(dto)) {
+                        return BookMapper.toMinimalDto(book);
+                    }
+
+                    return BookMapper.toFullDto(book);
+                });
     }
 
     @Override
@@ -72,14 +99,19 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Mono<BookDto> update(Long id, BookDto bookDto) {
+
         log.info("Actualizando libro ID {} con datos: {}", id, bookDto);
-        return getById(id)
+
+        return repository.findById(id)
+                .switchIfEmpty(Mono.error(new BookNotFoundException(id)))
                 .flatMap(existing -> {
+
                     existing.setTitle(bookDto.getTitle());
                     existing.setAuthor(bookDto.getAuthor());
                     existing.setPrice(bookDto.getPrice());
                     existing.setPublishDate(bookDto.getPublishDate());
-                    return repository.save(toEntity(existing));
+
+                    return repository.save(existing);
                 })
                 .doOnSuccess(updated -> log.info("Libro actualizado: {}", updated))
                 .doOnError(e -> log.error("Error actualizando libro ID {}: {}", id, e.getMessage()))

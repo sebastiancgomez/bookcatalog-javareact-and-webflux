@@ -7,11 +7,17 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDate;
 
 public interface BookService {
-    Mono<BookDto> getById(Long id);
     Mono<BookDto> create(BookDto book);
     Mono<BookDto> update(Long id, BookDto book);
     Mono<Void> delete(Long id);
+    Mono<PaginatedBooks> getAll(
+            int page,
+            int size,
+            String title,
+            String author,
+            LocalDate from,
+            LocalDate to,
+            String dto);
 
-    Mono<PaginatedBooks> getAll(int page, int size, String title, String author,  LocalDate from,
-                                LocalDate to);
+    Mono<Object> getById(Long id, String dto);
 }

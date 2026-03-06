@@ -1,8 +1,11 @@
 package com.example.bookcatalog.controllers;
 
 import com.example.bookcatalog.dto.BookDto;
+import com.example.bookcatalog.dto.BookFullDto;
+import com.example.bookcatalog.dto.BookMinimalDto;
 import com.example.bookcatalog.exception.ErrorResponse;
 import com.example.bookcatalog.dto.response.PaginatedBooks;
+import com.example.bookcatalog.mapper.BookMapper;
 import com.example.bookcatalog.services.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/books")
@@ -85,16 +89,15 @@ public class BookController {
     }
 
     // =========================
-    // GET BY ID
-    // =========================
+// GET BY ID
+// =========================
     @Operation(summary = "Get book by ID")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Book found",
                     content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = BookDto.class)
+                            mediaType = "application/json"
                     )
             ),
             @ApiResponse(
@@ -107,16 +110,58 @@ public class BookController {
             )
     })
     @GetMapping("/{id}")
-    public Mono<BookDto> getBookById(@PathVariable Long id) {
+    public Mono<?> getBookById(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "full") String dto) {
 
-        log.info("GET /books/{}", id);
+        log.info("GET /books/{} dto={}", id, dto);
 
-        return service.getById(id)
+        return service.getById(id, dto)
                 .doOnSuccess(book ->
                         log.info("GET /books/{} - found", id)
                 )
                 .doOnError(error ->
                         log.error("GET /books/{} - error", id, error)
+                );
+    }
+    // =========================
+// GET ALL (PAGINATED)
+// =========================
+    @Operation(summary = "Get all books (paginated)")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Books retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PaginatedBooks.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid pagination parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
+    @GetMapping
+    public Mono<PaginatedBooks> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) LocalDate publishDateFrom,
+            @RequestParam(required = false) LocalDate publishDateTo,
+            @RequestParam(defaultValue = "full") String dto) {
+
+        log.info("GET /books - page={}, size={}, title={}, author={}, publishDateFrom={}, publishDateTo={}, dto={}",
+                page, size, title, author, publishDateFrom, publishDateTo, dto);
+
+        return service.getAll(page, size, title, author, publishDateFrom, publishDateTo, dto)
+                .doOnError(error ->
+                        log.error("GET /books - error retrieving books", error)
                 );
     }
 
@@ -206,43 +251,5 @@ public class BookController {
                 );
     }
 
-    // =========================
-    // GET ALL (PAGINATED)
-    // =========================
-    @Operation(summary = "Get all books (paginated)")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Books retrieved successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = PaginatedBooks.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid pagination parameters",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponse.class)
-                    )
-            )
-    })
-    @GetMapping
-    public Mono<PaginatedBooks> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String author,
-            @RequestParam(required = false) LocalDate publishDateFrom,
-            @RequestParam(required = false) LocalDate publishDateTo) {
 
-        log.info("GET /books - page={}, size={}, title={}, author={}, publishDateFrom={}, publishDateTo={}",
-                page, size, title, author, publishDateFrom, publishDateTo);
-
-        return service.getAll(page, size, title, author, publishDateFrom, publishDateTo)
-                .doOnError(error ->
-                        log.error("GET /books - error retrieving books", error)
-                );
-    }
 }

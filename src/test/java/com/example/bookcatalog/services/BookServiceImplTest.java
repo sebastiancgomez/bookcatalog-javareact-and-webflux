@@ -1,6 +1,7 @@
 package com.example.bookcatalog.services;
 
 import com.example.bookcatalog.dto.BookDto;
+import com.example.bookcatalog.dto.BookFullDto;
 import com.example.bookcatalog.exception.BookNotFoundException;
 import com.example.bookcatalog.model.Book;
 import com.example.bookcatalog.repository.BookRepository;
@@ -49,8 +50,11 @@ class BookServiceImplTest {
         Book book = new Book(1L, "Title 1", "Author 1", BigDecimal.valueOf(20));
         when(repository.findById(1L)).thenReturn(Mono.just(book));
 
-        StepVerifier.create(service.getById(1L))
-                .expectNextMatches(b -> b.getTitle().equals("Title 1"))
+        StepVerifier.create(service.getById(1L, "full"))
+                .expectNextMatches(b -> {
+                    BookFullDto dto = (BookFullDto) b;
+                    return dto.getTitle().equals("Title 1");
+                })
                 .verifyComplete();
 
         verify(repository, times(1)).findById(1L);
@@ -58,18 +62,26 @@ class BookServiceImplTest {
 
     @Test
     void testUpdateBook() {
+
         Book existing = new Book(1L, "Old Title", "Old Author", BigDecimal.valueOf(15));
         Book updatedEntity = new Book(1L, "New Title", "New Author", BigDecimal.valueOf(25));
 
-        BookDto updatedDto = new BookDto(1L, "New Title", "New Author", BigDecimal.valueOf(25), LocalDate.now());
+        BookDto updatedDto = new BookDto(
+                1L,
+                "New Title",
+                "New Author",
+                BigDecimal.valueOf(25),
+                LocalDate.now()
+        );
 
         when(repository.findById(1L)).thenReturn(Mono.just(existing));
         when(repository.save(any(Book.class))).thenReturn(Mono.just(updatedEntity));
 
         StepVerifier.create(service.update(1L, updatedDto))
-                .expectNextMatches(b ->
-                        b.getTitle().equals("New Title") &&
-                                b.getPrice().equals(BigDecimal.valueOf(25)))
+                .expectNextMatches(dto ->
+                        dto.getTitle().equals("New Title") &&
+                                dto.getPrice().equals(BigDecimal.valueOf(25))
+                )
                 .verifyComplete();
 
         verify(repository).findById(1L);
@@ -97,12 +109,13 @@ class BookServiceImplTest {
         when(repository.findFiltered("Java", "John", null, null, PageRequest.of(0, 5)))
                 .thenReturn(Flux.just(book1));
 
-        StepVerifier.create(service.getAll(0, 5, "Java", "John", null, null))
-                .expectNextMatches(paginated ->
-                        paginated.getTotal() == 1 &&
-                                paginated.getBooks().size() == 1 &&
-                                paginated.getBooks().get(0).getTitle().equals("Java Basics")
-                )
+        StepVerifier.create(service.getAll(0, 5, "Java", "John", null, null, "full"))
+                .expectNextMatches(paginated -> {
+                    BookFullDto b1 = (BookFullDto) paginated.getBooks().get(0);
+                   return paginated.getTotal() == 1 &&
+                            paginated.getBooks().size() == 1 &&
+                            b1.getTitle().equals("Java Basics");
+                })
                 .verifyComplete();
 
         verify(repository, times(1)).countFiltered("Java", "John", null, null);
@@ -118,13 +131,17 @@ class BookServiceImplTest {
         when(repository.findFiltered(null, null, null, null, PageRequest.of(0, 5)))
                 .thenReturn(Flux.just(book1, book2));
 
-        StepVerifier.create(service.getAll(0, 5, null, null, null, null))
-                .expectNextMatches(paginated ->
-                        paginated.getTotal() == 2 &&
-                                paginated.getBooks().size() == 2 &&
-                                paginated.getBooks().get(0).getTitle().equals("Book1") &&
-                                paginated.getBooks().get(1).getTitle().equals("Book2")
-                )
+        StepVerifier.create(service.getAll(0, 5, null, null, null, null, "full"))
+                .expectNextMatches(paginated ->{
+
+                    BookFullDto b1 = (BookFullDto) paginated.getBooks().get(0);
+                    BookFullDto b2 = (BookFullDto) paginated.getBooks().get(1);
+
+                    return paginated.getTotal() == 2 &&
+                            paginated.getBooks().size() == 2 &&
+                            b1.getTitle().equals("Book1") &&
+                            b2.getTitle().equals("Book2");
+                })
                 .verifyComplete();
 
         verify(repository, times(1)).countFiltered(null, null, null, null);
@@ -134,7 +151,7 @@ class BookServiceImplTest {
     void testGetByIdNotFound() {
         when(repository.findById(1L)).thenReturn(Mono.empty());
 
-        StepVerifier.create(service.getById(1L))
+        StepVerifier.create(service.getById(1L, "full"))
                 .expectError(BookNotFoundException.class)
                 .verify();
 
@@ -192,7 +209,7 @@ class BookServiceImplTest {
         when(repository.findFiltered(null, null, from, to, PageRequest.of(0, 5)))
                 .thenReturn(Flux.just(book));
 
-        StepVerifier.create(service.getAll(0, 5, null, null, from, to))
+        StepVerifier.create(service.getAll(0, 5, null, null, from, to, "full"))
                 .expectNextMatches(p ->
                         p.getTotal() == 1 &&
                                 p.getBooks().size() == 1
@@ -208,7 +225,7 @@ class BookServiceImplTest {
         LocalDate from = LocalDate.of(2024, 2, 1);
         LocalDate to = LocalDate.of(2024, 1, 1);
 
-        StepVerifier.create(service.getAll(0, 5, null, null, from, to))
+        StepVerifier.create(service.getAll(0, 5, null, null, from, to, "full"))
                 .expectError(IllegalArgumentException.class)
                 .verify();
 

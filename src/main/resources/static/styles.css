@@ -1,12 +1,30 @@
 body {
     font-family: Arial, sans-serif;
-    padding: 20px;
+    margin: 20px;
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+.filters input {
+    margin-right: 5px;
+}
+
+input, button {
+    padding: 6px;
+    margin: 5px;
+}
+
+label {
+    margin-left: 10px;
+    font-size: 14px;
 }
 
 table {
-    width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    width: 100%;
+    margin-top: 15px;
 }
 
 th, td {
@@ -15,10 +33,10 @@ th, td {
     text-align: left;
 }
 
-button {
-    margin-right: 5px;
+th {
+    background: #f3f3f3;
 }
 
-#pagination {
-    margin-top: 10px;
+button {
+    cursor: pointer;
 }
