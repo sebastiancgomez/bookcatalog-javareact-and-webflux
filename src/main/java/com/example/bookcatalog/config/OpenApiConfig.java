@@ -18,8 +18,8 @@ public class OpenApiConfig {
                         .description("Reactive Book Catalog built with Spring WebFlux and R2DBC")
                         .version("v1.0.0")
                         .contact(new Contact()
-                                .name("Tu Nombre")
-                                .email("tuemail@dominio.com"))
+                                .name("Juan Sebastián Cárdenas Gómez")
+                                .email("sebastian.cgomez@hotmail.com"))
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0")));
