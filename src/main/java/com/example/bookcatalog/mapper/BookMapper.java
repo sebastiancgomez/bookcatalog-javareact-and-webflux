@@ -1,5 +1,7 @@
 package com.example.bookcatalog.mapper;
 
+import com.example.bookcatalog.dto.BookFullDto;
+import com.example.bookcatalog.dto.BookMinimalDto;
 import com.example.bookcatalog.model.Book;
 import com.example.bookcatalog.dto.BookDto;
 
@@ -23,5 +25,22 @@ public class BookMapper {
         book.setPrice(dto.getPrice());
         book.setPublishDate(dto.getPublishDate());
         return book;
+    }
+    public static BookMinimalDto toMinimalDto(Book book) {
+        return new BookMinimalDto(
+                book.getId(),
+                book.getTitle(),
+                book.getAuthor()
+        );
+    }
+
+    public static BookFullDto toFullDto(Book book) {
+        return new BookFullDto(
+                book.getId(),
+                book.getTitle(),
+                book.getAuthor(),
+                book.getPrice(),
+                book.getPublishDate()
+        );
     }
 }

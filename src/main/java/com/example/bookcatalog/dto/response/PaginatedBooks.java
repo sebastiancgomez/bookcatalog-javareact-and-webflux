@@ -5,9 +5,9 @@ import java.util.List;
 
 public class PaginatedBooks {
 
-    private final PageResponse<BookDto> pageResponse;
+    private final PageResponse<?> pageResponse;
 
-    public PaginatedBooks(Long total, List<BookDto> books) {
+    public PaginatedBooks(Long total, List<?> books) {
         this.pageResponse = new PageResponse<>(
                 books,
                 total,
@@ -20,11 +20,11 @@ public class PaginatedBooks {
         return pageResponse.totalElements();
     }
 
-    public List<BookDto> getBooks() {
+    public List<?> getBooks() {
         return pageResponse.content();
     }
 
-    public PageResponse<BookDto> toPageResponse() {
+    public PageResponse<?> toPageResponse() {
         return pageResponse;
     }
 }

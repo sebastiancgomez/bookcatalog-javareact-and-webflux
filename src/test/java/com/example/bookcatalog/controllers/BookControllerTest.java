@@ -1,6 +1,7 @@
 package com.example.bookcatalog.controllers;
 
 import com.example.bookcatalog.dto.BookDto;
+import com.example.bookcatalog.dto.BookFullDto;
 import com.example.bookcatalog.dto.response.PageResponse;
 import com.example.bookcatalog.dto.response.PaginatedBooks;
 import com.example.bookcatalog.exception.BookNotFoundException;
@@ -123,7 +124,8 @@ class BookControllerTest {
                 anyString(),
                 anyString(),
                 any(),
-                any()
+                any(),
+                eq("full")
         )).thenReturn(Mono.just(page));
 
         webTestClient.get()
@@ -135,6 +137,7 @@ class BookControllerTest {
                         .queryParam("author", "")
                         .queryParam("publishDateFrom", "")
                         .queryParam("publishDateTo", "")
+                        .queryParam("dto","full")
                         .build())
                 .exchange()
                 .expectStatus().isOk()
@@ -150,10 +153,16 @@ class BookControllerTest {
     @Test
     void shouldReturnBookById() {
 
-        BookDto dto = new BookDto(1L,"Title","Author",BigDecimal.TEN, LocalDate.now());
+        BookFullDto dto = new BookFullDto(
+                1L,
+                "Title",
+                "Author",
+                BigDecimal.TEN,
+                LocalDate.now()
+        );
 
-        when(bookService.getById(1L))
-                .thenReturn(Mono.just(dto));
+        when(bookService.getById(1L, "full"))
+                .thenReturn(Mono.<Object>just(dto));
 
         webTestClient.get()
                 .uri("/books/1")
@@ -166,7 +175,7 @@ class BookControllerTest {
     @Test
     void shouldReturn404WhenBookNotFound() {
 
-        when(bookService.getById(1L))
+        when(bookService.getById(1L,"full"))
                 .thenReturn(Mono.error(new BookNotFoundException(1L)));
 
         webTestClient.get()
@@ -261,13 +270,15 @@ class BookControllerTest {
                 any(),
                 any(),
                 eq(LocalDate.of(2024, 1, 1)),
-                isNull()
+                isNull(),
+                eq("full")
         )).thenReturn(Mono.just(page));
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/books")
                         .queryParam("publishDateFrom", "2024-01-01")
+                        .queryParam("dto", "full")
                         .build())
                 .exchange()
                 .expectStatus().isOk()
@@ -284,7 +295,8 @@ class BookControllerTest {
                 any(),
                 any(),
                 eq(LocalDate.of(2024, 2, 1)),
-                eq(LocalDate.of(2024, 1, 1))
+                eq(LocalDate.of(2024, 1, 1)),
+                eq("full")
         )).thenReturn(Mono.error(
                 new IllegalArgumentException("publishDateFrom must be before publishDateTo")
         ));
@@ -294,6 +306,7 @@ class BookControllerTest {
                         .path("/books")
                         .queryParam("publishDateFrom", "2024-02-01")
                         .queryParam("publishDateTo", "2024-01-01")
+                        .queryParam("dto","full")
                         .build())
                 .exchange()
                 .expectStatus().isBadRequest();
